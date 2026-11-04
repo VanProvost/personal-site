@@ -1,5 +1,13 @@
 {
+  "name": "main-hugo-site",
+  "version": "1.0.0",
   "devDependencies": {
-    "hugo-bin": "^0.167.0"
+    "hugo-bin": "latest"
+  },
+  "hugo-bin": {
+    "buildTags": "extended"
+  },
+  "scripts": {
+    "build": "hugo"
   }
 }

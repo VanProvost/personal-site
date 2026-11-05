@@ -6,6 +6,7 @@
       "persist": true,
     },
   },
+  
   // Set this to the name of your project.
   "name": "main-hugo-site",
   // Set this to today's date in YYYY-MM-DD format.
@@ -23,4 +24,5 @@
       "custom_domain": true,
     },
   ],
+  "preview_urls": true,
 }

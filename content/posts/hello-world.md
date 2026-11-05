@@ -1,18 +1,18 @@
 ---
-title: "hello-world"
-slug: "hello-world"
-date: 2026-11-04T15:19:28-05:00
-draft: true
+title: "How I Built a Serverless Website with Hugo, GitHub, and Cloudflare Workers"
+slug: "serverless-hugo-cloudflare-workers"
+date: 2026-11-05
+draft: false
 comments: false
 featuredImg: ""
 ImgCopyright: ""
 images: []
-description: ""
+description: "A practical walkthrough of my Hugo, GitHub, and Cloudflare Workers site, from local preview to deployment."
 tags:
-  - untagged
-categories:
-  - uncategorized
-author: ""
+  - Hugo
+  - GitHub
+  - Cloudflare Workers
+author: "vprovost"
 authorLink: ""
 scrolltotop: true
 mathjax: false
@@ -29,113 +29,132 @@ keywords: []
 readTime: true
 ---
 
-# Test
-Hello world!
+I wanted a personal website that was easy to update without managing a server. This is the setup I landed on: Hugo turns Markdown into a static site, GitHub keeps the source and build instructions together, and Cloudflare Workers publishes the generated files.
 
-## Add a Summary
+Each tool has one clear job. Here is the path from an edit to a live page:
 
-{{< admonition type=summary title="Summary headline" >}}
-Details for the **summary** can be entered here
-{{< /admonition >}}
+```text
+GitHub push -> Workers Builds -> Wrangler -> build.sh -> Hugo
+                       |
+                       v
+                   public/ -> Worker assets
+```
 
-## Add Tooltip sections
+This guide walks through the pieces in the order I put them together.
 
-{{< admonition type=tip title="admonition tip" >}}
-Details for the **tip** can be entered here
-{{< /admonition >}}
+## 1. Start with Hugo
 
-<!--
-# Writing Framework
+Hugo is the content and build layer. Posts are Markdown files under `content/posts/`; Hugo combines them with a theme and writes the finished site to `public/`.
 
-Use this as a guide, not a requirement.
-Delete sections that do not fit the post.
+The core settings in my `hugo.toml` look like this:
 
-## 1. Hook
-Start with something that makes the reader want to continue.
+```toml
+baseURL = "https://www.vprovost.ca"
+defaultContentLanguage = "en"
+defaultContentLanguageInSubdir = true
+theme = "hermit-v2"
+```
 
-- What problem, question, observation, or idea is this post about?
-- Why should the reader care?
-- Can the opening be explained in 2–3 sentences?
+The language setting puts the English site under `/en/`. The public `baseURL` gives Hugo the hostname to use for canonical links and generated URLs.
 
-## 2. Context
-Give the reader enough background to understand the problem.
+I use Hermit-V2 as a Git submodule rather than copying the theme into the project:
 
-- What happened?
-- What were you trying to achieve?
-- What assumptions should the reader know?
+```sh
+git submodule add https://github.com/1bl4z3r/hermit-V2.git themes/hermit-v2
+```
 
-## 3. The Problem
-Clearly state what was difficult, confusing, interesting, or worth solving.
+The repository records the theme commit, so a build uses a known version of the theme. That is useful in a clean deployment checkout, where the submodule has to be initialized explicitly.
 
-> What exactly am I trying to solve or explain?
+## 2. Write and preview a post
 
-## 4. The Journey
-Explain how you approached the problem.
+Each post is a Markdown file with YAML front matter. The front matter controls the URL, publication date, draft status, tags, and description. For example:
 
-- What did you try first?
-- What worked?
-- What failed?
-- What surprised you?
-- What decisions did you make and why?
+```yaml
+---
+title: "My First Post"
+date: 2026-11-05
+draft: true
+description: "A short summary for the post list."
+tags: [hugo, web]
+---
+```
 
-## 5. The Insight
-This is the core of the post.
+While writing, I preview the site locally:
 
-> What is the one thing I want the reader to remember?
+```sh
+hugo server -D
+```
 
-Explain the idea in your own words. Use examples, diagrams, code, screenshots, analogies, or comparisons when useful.
+The `-D` flag includes drafts. When a post is ready to publish, I change `draft` to `false` and verify it with a production build. Hugo Extended is required because the theme compiles SCSS.
 
-## 6. The Practical Part
-Show the reader how they can apply the idea.
+## 3. Keep the source in GitHub
 
-- Steps
-- Commands
-- Code
-- Configuration
-- Examples
-- Before/after comparisons
-- Common mistakes
+The repository contains the content, Hugo configuration, Wrangler configuration, and `build.sh`. The theme is tracked as a submodule. This keeps the deploy reproducible: Workers Builds can check out the repository, initialize the theme, and run the same instructions from a clean environment.
 
-## 7. Lessons Learned
-Reflect briefly on the experience.
+There is one cross-platform detail worth getting right: Linux paths are case-sensitive. The Hugo theme name, `.gitmodules` path, and directory in `themes/` must use the same spelling. A case mismatch can go unnoticed on Windows and fail when the Linux build tries to find the theme.
 
-- What would you do differently?
-- What did you learn?
-- What is still unresolved?
-- What would you investigate next?
+## 4. Make the build repeatable
 
-## 8. Conclusion
-Close with the main takeaway.
+Workers Builds runs `npx wrangler deploy`. In this project, that command calls `build.sh`, which installs the required tools, initializes the theme, installs Node dependencies, and builds the site.
 
-Try to answer:
+The script pins tool versions at the top. One important choice is downloading the Extended Hugo archive, not the standard archive:
 
-> "After reading this, what should the reader understand, remember, or do?"
+```bash
+HUGO_VERSION=0.169.0
 
-## Creative Prompts
+curl -sfL --output-dir "${build_temp_dir}" -O \
+  "https://github.com/gohugoio/hugo/releases/download/v${HUGO_VERSION}/hugo_extended_${HUGO_VERSION}_linux-amd64.tar.gz"
+mkdir -p "${HOME}/.local/hugo"
+tar -C "${HOME}/.local/hugo" -xf \
+  "${build_temp_dir}/hugo_extended_${HUGO_VERSION}_linux-amd64.tar.gz"
+```
 
-When the post feels too technical or dry, try one of these:
+Then the build initializes the submodule and creates the production output:
 
-- Explain the concept using an analogy.
-- Tell the story of how you discovered the solution.
-- Compare two approaches and explain the trade-offs.
-- Show the mistake before showing the solution.
-- Explain what you would tell your past self.
-- Start with a surprising observation.
-- Turn a frustrating problem into a short story.
-- Explain a complex idea as if teaching a beginner.
-- Show what you originally believed vs. what you know now.
-- End with a question that encourages the reader to experiment.
+```bash
+if [[ -f .gitmodules ]]; then
+  git submodule update --init --recursive
+fi
 
-## Final Review
+if [[ -f package-lock.json ]]; then
+  npm ci
+fi
 
-- [ ] Does the opening create curiosity?
-- [ ] Is the problem obvious?
-- [ ] Does every section contribute something useful?
-- [ ] Have I shown rather than only explained?
-- [ ] Are examples concrete?
-- [ ] Have I removed unnecessary detail?
-- [ ] Is there a clear takeaway?
-- [ ] Would another developer actually find this useful?
-- [ ] Have I added links/references where appropriate?
-- [ ] Have I checked code and commands before publishing?
--->
+hugo build --gc --minify
+```
+
+The output is written to `public/`, ready for Wrangler to publish.
+
+## 5. Tell Wrangler what to build and publish
+
+The relevant parts of `wrangler.jsonc` connect the deploy command to the generated assets and custom domain:
+
+```jsonc
+{
+  "build": {
+    "command": "chmod a+x build.sh && ./build.sh"
+  },
+  "assets": {
+    "directory": "./public",
+    "not_found_handling": "404-page"
+  },
+  "routes": [
+    { "pattern": "www.vprovost.ca", "custom_domain": true }
+  ]
+}
+```
+
+Hugo runs during the build, not on each page request. Wrangler deploys the generated files as Worker assets, and Cloudflare serves them from the edge. Workers Builds connects the GitHub repository to this process, so pushing a change starts a fresh build and deployment.
+
+## 6. Deploy and verify
+
+My day-to-day loop is short:
+
+1. Write or edit a post in `content/posts/`.
+2. Preview it with `hugo server -D`.
+3. Set `draft: false` when it is ready to publish.
+4. Push the change to GitHub and check the Workers Builds log.
+
+If the deploy fails, the build log helps separate site errors from hosting and DNS errors. I hit a Linux case-sensitivity issue with the theme path and a missing Hugo Extended binary. Later, a local DNS override returned `1.1.1.1` for the site; public DNS and the Worker were healthy, but that local answer caused Cloudflare Error 1034. A failed browser request does not always mean the Hugo build or Worker is broken.
+
+The result is a simple publishing pipeline: Markdown is the source, Hugo produces the site, GitHub tracks and triggers the build, and Cloudflare Workers serves the output. I can focus on writing and let the pipeline handle the rest.

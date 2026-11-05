@@ -1,0 +1,57 @@
+{{ define "head" }}
+	{{ if .Site.Params.bgImg -}}
+	<style>.bg-img {background-image: url('{{.Site.Params.bgImg}}');}</style>
+	{{- else if .Site.Params.images -}}
+		{{- range first 1 .Site.Params.images -}}
+		<style>.bg-img {background-image: url('{{. | absURL}}');}</style>
+		{{- end -}}
+	{{- end -}}
+{{ end }}
+
+{{ define "main" }}
+	{{- if (or .Site.Params.images .Site.Params.bgImg) }}
+	<div class="bg-img"></div>
+	{{- end }}
+	<main id="spotlight" {{- if ne false .Site.Params.usesAnimation }} class="animated fadeIn" {{- end -}}>
+		<div id="home-center">
+			<h1 id="home-title">{{ .Site.Title }}</h1>
+			{{- with .Site.Params.homeSubtitle }}
+				<div id="typewriter-container">
+					<p id="home-subtitle">{{.}}</p>
+				</div>
+			{{- end }}
+			{{- with .Site.Params.socialLinks }}
+			<div id="home-links">
+				{{ partialCached "social-icons.html" . }}
+			</div>
+			{{- end }}
+			<nav id="home-nav" class="site-nav">
+				{{ partialCached "menu.html" . }}
+			</nav>
+		</div>
+		<div id="home-footer">{{- if templates.Exists "_partials/index-footer.html" -}}{{- partialCached "index-footer.html" . -}}{{- else -}}{{- partial "footer.html" . -}}{{- end -}}</div>
+	</main>
+
+	{{- $posts := where .Site.RegularPages "Section" "posts" -}}
+	{{- $posts = sort $posts "Date" "desc" -}}
+	<section class="site-main section-inner thin home-posts" aria-labelledby="home-posts-title">
+		<h2 id="home-posts-title">Posts</h2>
+		{{- with $posts }}
+		<div class="posts-group">
+			<ul class="posts-list">
+				{{- range first 5 . }}
+				<li class="post-item">
+					<a href="{{ .RelPermalink }}">
+						<span class="post-title">{{ .LinkTitle }}</span>
+						<time class="post-day" datetime="{{ .Date.Format "2006-01-02" }}">{{ .Date.Format (default "Jan 2, 2006" $.Site.Params.dateform.LongDate) }}</time>
+					</a>
+					{{- with .Description }}<span class="post-description">{{ . }}</span>{{ end -}}
+				</li>
+				{{- end }}
+			</ul>
+		</div>
+		{{- else }}
+		<p>No posts published yet.</p>
+		{{- end }}
+	</section>
+{{ end }}

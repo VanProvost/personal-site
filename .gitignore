@@ -7,8 +7,9 @@
 /resources/_gen/
 /.hugo_build.lock
 /.vscode
-/.clinerules
-
+/.agents
+/.github/instructions/
+AGENTS.md
 # Binaries for programs and plugins
 *.exe
 *.exe~

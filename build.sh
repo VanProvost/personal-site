@@ -103,7 +103,11 @@ main() {
 
   # Build the project
   echo "Building the project..."
-  hugo build --gc --minify
+  if [[ "${WORKERS_CI_BRANCH:-}" == "dev" ]]; then
+    hugo build --gc --minify --baseURL "https://dev.preview.vprovost.ca/"
+  else
+    hugo build --gc --minify
+  fi
 }
 
 main "$@"

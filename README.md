@@ -66,6 +66,14 @@ hugo build --gc --minify
 
 Wrangler publishes the generated `public/` directory as static assets. Do not run `build.sh` as a Windows command, deploy manually, or change Cloudflare settings as part of local development.
 
+### Branch previews
+
+GitHub Actions runs the Hugo build check; Cloudflare Workers Builds publishes the site. Keep these jobs separate so a GitHub check does not also deploy.
+
+The Cloudflare production branch is `main` and serves `www.vprovost.ca`. Pushes to other branches, including `dev`, should use Cloudflare Preview Builds. The `dev` preview uses `dev.preview.vprovost.ca`; the preview-only `preview.vprovost.ca` custom domain is configured separately from the production domain. The build script sets Hugo's `baseURL` to the preview hostname on Cloudflare builds for `dev`, so generated links and assets stay on the preview.
+
+See [Cloudflare branch preview setup](docs/cloudflare-previews.md) for the required GitHub and Cloudflare dashboard steps, preview isolation notes, and troubleshooting.
+
 ## License
 
 This project is licensed under the MIT License; see [LICENSE](LICENSE).

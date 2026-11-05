@@ -96,7 +96,7 @@ enableEmoji = true
   scrollToTop = true 
   global_mathjax = false
   # legacyLayout = false
-  shareSocial = true
+  shareSocial = false
   # googleTagManager = "GTM-XXXXXXXX"
   # tagSymbol = "#"
   # categorySymbol = "⊲"
@@ -165,16 +165,16 @@ enableEmoji = true
     sameOriginEagerness = "moderate"        # How eagerly to prefetch internal links.
   
   [[params.socialLinks]]
-    name = "mastodon"
-    url = "https://joinmastodon.org/"
-
-  [[params.socialLinks]]
-    name = "x"
-    url = "https://twitter.com/"
+    name = "linkedin"
+    url = "https://www.linkedin.com/in/van-provost/"
 
   [[params.socialLinks]]
     name = "github"
-    url = "https://github.com/1bl4z3r/hermit-V2/tree/staging"
+    url = "https://github.com/VanProvost"
+
+  [[params.socialLinks]]
+    name = "email"
+    url = "mailto:public@vprovost.ca"
 
 [menu]
 
@@ -182,3 +182,8 @@ enableEmoji = true
     name = "Posts"
     url = "posts/"
     weight = 10
+
+  [[menu.main]]
+    name = "About"
+    url = "about/"
+    weight = 20

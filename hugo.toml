@@ -7,7 +7,7 @@
 baseURL = "vprovost.ca"
 defaultContentLanguage = "en"
 defaultContentLanguageInSubdir = true
-theme = "hermit-v2"
+theme = "hermit-V2"
 #enableRobotsTXT = true ## set to true to enable inbuilt robots.txt
 
 [languages]

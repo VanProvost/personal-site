@@ -19,6 +19,10 @@ theme = "hermit-v2"
  
 locale = "en-US"
 
+[caches]
+  [caches.images]
+    dir = ':cacheDir/images'
+
 # title = "CHANGE ME"
 # enableGitInfo = true
 
@@ -39,7 +43,6 @@ enableEmoji = true
 
 [params.author]
   name = "vprovost"
-  about = "about-hugo"
 
 [blackfriday]
   # hrefTargetBlank = true
@@ -179,8 +182,3 @@ enableEmoji = true
     name = "Posts"
     url = "posts/"
     weight = 10
-
-  [[menu.main]]
-    name = "About"
-    url = "about-hugo/"
-    weight = 20

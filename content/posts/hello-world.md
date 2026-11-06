@@ -33,11 +33,27 @@ I wanted a personal website that was easy to update without managing a server. T
 
 Each tool has one clear job. Here is the path from an edit to a live page:
 
-```text
-GitHub push -> Workers Builds -> Wrangler -> build.sh -> Hugo
-                       |
-                       v
-                   public/ -> Worker assets
+```mermaid
+flowchart TD
+  A[Commit a change locally] --> B[Push commit to dev]
+  B --> C[GitHub Actions checks out code and runs build.sh]
+  C --> D{Build check succeeds?}
+  D -->|No| E[Fix the change and push to dev]
+  E --> C
+  D -->|Yes| F[Merge dev into main]
+
+  B --> G[Workers Builds creates a dev Preview]
+  G --> H[npx wrangler preview runs build.sh]
+  H --> I[Hugo builds with the dev preview baseURL]
+  I --> J[Wrangler uploads public/ as Preview assets]
+  J --> K[Preview is served at dev.preview.vprovost.ca]
+
+  F --> L[Push merge commit to main]
+  L --> M[Workers Builds starts production deployment]
+  M --> N[npx wrangler deploy runs build.sh]
+  N --> O[Hugo builds with the production baseURL]
+  O --> P[Wrangler uploads public/ as production assets]
+  P --> Q[Production site is served at www.vprovost.ca]
 ```
 
 This guide walks through the pieces in the order I put them together.

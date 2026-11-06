@@ -14,7 +14,7 @@ theme = "hermit-v2"
   [languages.en]
     title = 'vprovost'
     [languages.en.params]
-      homeSubtitle = "Building for the web, and writing down what I learn."
+      homeSubtitle = "Infrastructure operations, virtualized lab setups, and technical guides."
     weight = 1
  
 locale = "en-US"

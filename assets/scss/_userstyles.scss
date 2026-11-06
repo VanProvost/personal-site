@@ -1,0 +1,15 @@
+#site-header .hdr-wrapper {
+  flex-wrap: wrap;
+}
+
+#header-footer {
+  flex: 0 0 100%;
+  text-align: center;
+  font-size: .65em;
+  line-height: 1.35;
+}
+
+#header-footer p {
+  margin: 0;
+  overflow-wrap: anywhere;
+}

@@ -28,9 +28,13 @@
 
 <body id="page">
     {{- partial "google-tag-manager.html" (dict "context" . "name" "body") -}}
-    {{- block "header" . -}}{{ end -}}
+    {{- block "header" . -}}
+        {{- if not .IsHome -}}
+            {{- partial "header.html" . -}}
+        {{- end -}}
+    {{- end -}}
     {{- block "main" . -}}{{ end -}}
-    {{- block "footer" . -}}{{ end }}
+    {{- if .IsHome -}}{{- block "footer" . -}}{{ end -}}{{- end }}
     {{- partial "scroll-to-top.html" . }}
 
     {{- $main := resources.Get "js/main.js" -}}

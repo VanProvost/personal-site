@@ -1,0 +1,21 @@
+{{- if and .IsPage (eq .Section "posts") -}}
+	{{- if templates.Exists "_partials/posts-footer.html" -}}
+		{{- partialCached "posts-footer.html" . -}}
+	{{- else -}}
+		{{- partial "footer.html" . -}}
+	{{- end -}}
+{{- else if or .IsSection (eq .Kind "taxonomy") (eq .Kind "term") -}}
+	{{- if templates.Exists "_partials/list-footer.html" -}}
+		{{- partialCached "list-footer.html" . -}}
+	{{- else -}}
+		{{- partial "footer.html" . -}}
+	{{- end -}}
+{{- else if .IsPage -}}
+	{{- if templates.Exists "_partials/single-footer.html" -}}
+		{{- partialCached "single-footer.html" . -}}
+	{{- else -}}
+		{{- partial "footer.html" . -}}
+	{{- end -}}
+{{- else -}}
+	{{- partial "footer.html" . -}}
+{{- end -}}

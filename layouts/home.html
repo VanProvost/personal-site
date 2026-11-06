@@ -29,6 +29,7 @@
 				{{ partialCached "menu.html" . }}
 			</nav>
 		</div>
+		<div id="home-footer">{{- if templates.Exists "_partials/index-footer.html" -}}{{- partialCached "index-footer.html" . -}}{{- else -}}{{- partial "footer.html" . -}}{{- end -}}</div>
 	</main>
 
 	{{- $posts := where .Site.RegularPages "Section" "posts" -}}
@@ -53,10 +54,4 @@
 		<p>No posts published yet.</p>
 		{{- end }}
 	</section>
-{{ end }}
-
-{{ define "footer" }}
-<footer id="site-footer" class="section-inner thin {{- if ne false .Site.Params.usesAnimation }} animated fadeIn faster {{- end -}}">
-	<div id="home-footer">{{- if templates.Exists "_partials/index-footer.html" -}}{{- partialCached "index-footer.html" . -}}{{- else -}}{{- partial "footer.html" . -}}{{- end -}}</div>
-</footer>
 {{ end }}

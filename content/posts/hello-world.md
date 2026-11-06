@@ -36,24 +36,26 @@ Each tool has one clear job. Here is the path from an edit to a live page:
 ```mermaid
 flowchart TD
   A[Commit a change locally] --> B[Push commit to dev]
-  B --> C[GitHub Actions checks out code and runs build.sh]
-  C --> D{Build check succeeds?}
-  D -->|No| E[Fix the change and push to dev]
-  E --> C
-  D -->|Yes| F[Merge dev into main]
+  B --> C[Hugo CI workflow starts]
+  C --> D[Build Hugo site job checks out repository and theme submodule]
+  D --> E[Custom workflow runs build.sh]
+  E --> F{Build check succeeds?}
+  F -->|No| G[Fix the change and push to dev]
+  G --> C
+  F -->|Yes| H[Merge dev into main]
 
-  B --> G[Workers Builds creates a dev Preview]
-  G --> H[npx wrangler preview runs build.sh]
-  H --> I[Hugo builds with the dev preview baseURL]
-  I --> J[Wrangler uploads public/ as Preview assets]
-  J --> K[Preview is served at dev.preview.vprovost.ca]
+  B --> I[Workers Builds creates a dev Preview]
+  I --> J[npx wrangler preview runs build.sh]
+  J --> K[Hugo builds with the dev preview baseURL]
+  K --> L[Wrangler uploads public/ as Preview assets]
+  L --> M[Preview is served at dev.preview.vprovost.ca]
 
-  F --> L[Push merge commit to main]
-  L --> M[Workers Builds starts production deployment]
-  M --> N[npx wrangler deploy runs build.sh]
-  N --> O[Hugo builds with the production baseURL]
-  O --> P[Wrangler uploads public/ as production assets]
-  P --> Q[Production site is served at www.vprovost.ca]
+  H --> N[Push merge commit to main]
+  N --> O[Workers Builds starts production deployment]
+  O --> P[npx wrangler deploy runs build.sh]
+  P --> Q[Hugo builds with the production baseURL]
+  Q --> R[Wrangler uploads public/ as production assets]
+  R --> S[Production site is served at www.vprovost.ca]
 ```
 
 This guide walks through the pieces in the order I put them together.
@@ -83,7 +85,7 @@ The repository records the theme commit, so a build uses a known version of the 
 
 ## 2. Write and preview a post
 
-Each post is a Markdown file with YAML front matter. The front matter controls the URL, publication date, draft status, tags, and description. For example:
+Each post is a Markdown file with YAML front matter (If you've ever taken notes with Obsidian, this will be very familiar). The front matter controls the URL, publication date, draft status, tags, and description. For example:
 
 ```yaml
 ---
@@ -108,6 +110,36 @@ The `-D` flag includes drafts. When a post is ready to publish, I change `draft`
 The repository contains the content, Hugo configuration, Wrangler configuration, and `build.sh`. The theme is tracked as a submodule. This keeps the deploy reproducible: Workers Builds can check out the repository, initialize the theme, and run the same instructions from a clean environment.
 
 There is one cross-platform detail worth getting right: Linux paths are case-sensitive. The Hugo theme name, `.gitmodules` path, and directory in `themes/` must use the same spelling. A case mismatch can go unnoticed on Windows and fail when the Linux build tries to find the theme.
+
+### The GitHub Actions build check
+
+The `Hugo CI` workflow in `.github/workflows/hugo-ci.yml` checks the site on pushes and pull requests targeting `dev` or `main`. Its `Build Hugo site` job checks out the repository with its theme submodule, then runs `build.sh`. A successful check lets me merge the tested changes from `dev` into `main`; Cloudflare Workers Builds handles the separate preview and production deployments.
+
+```yaml
+name: Hugo CI
+
+on:
+  push:
+  pull_request:
+    branches: [dev, main]
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build Hugo site
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository and theme
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          fetch-depth: 0
+
+      - name: Build site
+        run: |
+          chmod +x build.sh
+          ./build.sh
+```
 
 ## 4. Make the build repeatable
 

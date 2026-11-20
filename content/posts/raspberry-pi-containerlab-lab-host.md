@@ -36,14 +36,39 @@ I wanted a network lab I could open from my laptop, without turning my laptop in
 Here's how a request gets from my laptop to a running lab:
 
 ```mermaid
-flowchart LR
-  A["VS Code + Containerlab extension<br/>(laptop)"] -.->|"at home"| E["clab-api-server<br/>192.168.0.3:8090"]
-  A -->|"away from home"| B["WARP + Cloudflare Tunnel<br/>(a future post)"]
-  B --> E
-  E --> F["Docker on the Pi"]
-  F --> G["srl1<br/>SR Linux"]
-  F --> H["client1<br/>Linux"]
-  G ---|"e1-1 ↔ eth1"| H
+---
+config:
+  look: classic
+  theme: base
+  themeVariables:
+    fontSize: 18px
+    primaryColor: "#2c3e50"
+    primaryTextColor: "#eeeeee"
+    primaryBorderColor: "#018472"
+    lineColor: "#cccccc"
+    textColor: "#eeeeee"
+    edgeLabelBackground: "#272822"
+    dropShadow: "none"
+    useGradient: false
+  flowchart:
+    nodeSpacing: 40
+    rankSpacing: 45
+---
+flowchart TD
+  laptop["VS Code on my laptop"]
+  remote["WARP + Cloudflare Tunnel<br/>(a future post)"]
+  api["clab-api-server on the Pi<br/>192.168.0.3:8090"]
+  docker["Docker on the Pi"]
+  srl["srl1: SR Linux"]
+  client["client1: Linux"]
+
+  laptop -->|"at home"| api
+  laptop -->|"away"| remote
+  remote --> api
+  api --> docker
+  docker --> srl
+  docker --> client
+  srl ---|"e1-1 to eth1"| client
 ```
 
 Two containers do the real work: containerlab and its API server. Everything else is plumbing to reach them.

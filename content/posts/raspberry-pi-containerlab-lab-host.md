@@ -260,4 +260,4 @@ All of this works on my LAN. When I'm away from home, I reach the Pi with Cloudf
 - **These containers are root on the host.** Both run privileged with the Docker socket mounted. Keep port 8090 on your LAN, and reach it from outside through something private like a VPN or a tunnel. Don't forward it on your router.
 - **Changing `JWT_SECRET` signs everyone out.** Old tokens stop working, and tokens expire after 24 hours anyway. Sign in again from **Manage Lab Hosts**.
 
-My first deploy took under ten minutes, start to finish. Not bad for a computer smaller than my phone.
+The first time I hit deploy on the template, the lab was up in under ten minutes. Not bad for a computer smaller than my phone.
